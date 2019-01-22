@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.la7"
+  version="0.0.1"
+  name="LA7 Streaming"
+  provider-name="Syco">
+  <requires>
+    <import addon="xbmc.python" version="2.25.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="init.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">LA7 Kodi Video Plugin</summary>
+    <description lang="en">An LA7 video plugin for Kodi mediacenter</description>
+    <disclaimer lang="en">Videos are provided by la7.it</disclaimer>
+    <assets>
+      <icon>icon.jpg</icon>
+    </assets>
+    <forum>https://github.com/syco/plugin.video.la7</forum>
+    <website>https://github.com/syco/plugin.video.la7</website>
+    <email></email>
+    <source>https://github.com/syco/plugin.video.la7</source>
+  </extension>
+</addon>
