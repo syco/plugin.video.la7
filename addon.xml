@@ -15,7 +15,7 @@
     <description lang="en">An LA7 video plugin for Kodi mediacenter</description>
     <disclaimer lang="en">Videos are provided by la7.it</disclaimer>
     <assets>
-      <icon>icon.jpg</icon>
+      <icon>icon.png</icon>
     </assets>
     <forum>https://github.com/syco/plugin.video.la7</forum>
     <website>https://github.com/syco/plugin.video.la7</website>
