@@ -38,17 +38,17 @@ def list_categories():
     ddd = (date.today() - timedelta(x)).strftime('%A %d %B %Y')
     listitem = xbmcgui.ListItem(label=ddd)
     listitem.setInfo('video', {'title': ddd, 'mediatype': 'video'})
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&category={1}'.format(_pid, x), listitem=listitem, isFolder=True)
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&daysago={1}'.format(_pid, x), listitem=listitem, isFolder=True)
 
   xbmcplugin.endOfDirectory(_handle)
 
 
-def list_videos(category):
-  ddd = (date.today() - timedelta(category)).strftime('%A %d %B %Y')
+def list_videos(daysago):
+  ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
   xbmcplugin.setPluginCategory(_handle, ddd)
   xbmcplugin.setContent(_handle, 'videos')
 
-  page = requests.get('http://www.la7.it/rivedila7/{}/LA7'.format(category), headers=headers).content
+  page = requests.get('http://www.la7.it/rivedila7/{}/LA7'.format(daysago), headers=headers).content
   tree = html.fromstring(page)
 
   for item in tree.xpath('//div[@class="palinsesto_row             disponibile clearfix"]'):
@@ -82,7 +82,7 @@ def router(paramstring):
   params = dict(parse_qsl(paramstring))
   if params:
     if params['action'] == 'listing':
-      list_videos(int(params['category']))
+      list_videos(int(params['daysago']))
     elif params['action'] == 'play':
       play_video(params['video'])
   else:
