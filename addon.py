@@ -21,18 +21,15 @@ def list_categories():
   xbmcplugin.setPluginCategory(_handle, 'LA7')
   xbmcplugin.setContent(_handle, 'videos')
 
+  rex = "vS = '(.*?)'"
+
   page = requests.get('http://www.la7.it/dirette-tv', headers=headers).content
-  tree = html.fromstring(page)
-
-  url = tree.xpath('//script[contains(.,"var vS")]')[0].text.strip()
-  url = url.replace("var vS = '", "", 1)
-  url = url.replace("';", "", 1)
-  xbmc.log(url, xbmc.LOGNOTICE)
-
-  listitem = xbmcgui.ListItem(label='Live')
-  listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
-  listitem.setProperty('IsPlayable', 'true')
-  xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, url), listitem=listitem, isFolder=False)
+  if re.findall(rex, page):
+    url = re.findall(rex, page)[0]
+    listitem = xbmcgui.ListItem(label='Live')
+    listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
+    listitem.setProperty('IsPlayable', 'true')
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, url), listitem=listitem, isFolder=False)
 
   for x in range(7):
     ddd = (date.today() - timedelta(x)).strftime('%A %d %B %Y')
@@ -48,24 +45,21 @@ def list_videos(daysago):
   xbmcplugin.setPluginCategory(_handle, ddd)
   xbmcplugin.setContent(_handle, 'videos')
 
-  page = requests.get('http://www.la7.it/rivedila7/{}/LA7'.format(daysago), headers=headers).content
+  rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
+
+  page = requests.get('http://www.la7.it/rivedila7/{0}/LA7'.format(daysago), headers=headers).content
   tree = html.fromstring(page)
 
   for item in tree.xpath('//div[@class="palinsesto_row             disponibile clearfix"]'):
-    time = item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip()
-    title = item.xpath('.//div[@class="titolo clearfix"]/a')[0].text.encode('utf-8').strip()
-    url = item.xpath('.//div[@class="titolo clearfix"]/a')[0];
-    href = url.get('href');
+    href = item.xpath('.//div[@class="titolo clearfix"]/a')[0].get('href');
     if not href.startswith('http'):
-      href = 'http://www.la7.it{}'.format(href)
+      href = 'http://www.la7.it{0}'.format(href)
 
-    title2 = '[{}] {}'.format(time, title)
-
-    pattern = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
-    for m in re.finditer(pattern, requests.get(href, headers=headers).content):
+    title = '[{0}] {1}'.format(item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip(), item.xpath('.//div[@class="titolo clearfix"]/a')[0].text.encode('utf-8').strip())
+    for m in re.finditer(rex, requests.get(href, headers=headers).content):
       href2 = m.group(1).encode('utf-8').strip()
-      listitem = xbmcgui.ListItem(label=title2)
-      listitem.setInfo('video', {'title': title2, 'mediatype': 'video'})
+      listitem = xbmcgui.ListItem(label=title)
+      listitem.setInfo('video', {'title': title, 'mediatype': 'video'})
       listitem.setProperty('IsPlayable', 'true')
       xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, href2), listitem=listitem, isFolder=False)
 
