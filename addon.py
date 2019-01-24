@@ -45,8 +45,6 @@ def list_videos(daysago):
   xbmcplugin.setPluginCategory(_handle, ddd)
   xbmcplugin.setContent(_handle, 'videos')
 
-  rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
-
   page = requests.get('http://www.la7.it/rivedila7/{0}/LA7'.format(daysago), headers=headers).content
   tree = html.fromstring(page)
 
@@ -55,15 +53,26 @@ def list_videos(daysago):
     if not href.startswith('http'):
       href = 'http://www.la7.it{0}'.format(href)
 
-    title = '[{0}] {1}'.format(item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip(), item.xpath('.//div[@class="titolo clearfix"]/a')[0].text.encode('utf-8').strip())
-    for m in re.finditer(rex, requests.get(href, headers=headers).content):
-      href2 = m.group(1).encode('utf-8').strip()
-      listitem = xbmcgui.ListItem(label=title)
-      listitem.setInfo('video', {'title': title, 'mediatype': 'video'})
-      listitem.setProperty('IsPlayable', 'true')
-      xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, href2), listitem=listitem, isFolder=False)
+    image = item.xpath('.//a[@class="thumbVideo"]//img')[0]
+    time = item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip()
+    title = '[{0}] {1}'.format(time, image.get('title').encode('utf-8').strip())
+    desc = item.xpath('.//div[@class="descrizione"]')[0].text.encode('utf-8').strip()
+
+    listitem = xbmcgui.ListItem(label=title)
+    listitem.setInfo('video', {'title': title, 'plot': desc, 'mediatype': 'video'})
+    listitem.setArt({'thumb': image.get('src').encode('utf-8').strip()})
+    listitem.setProperty('IsPlayable', 'true')
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}'.format(_pid, href), listitem=listitem, isFolder=False)
 
   xbmcplugin.endOfDirectory(_handle)
+
+
+def get_and_play_video(path):
+  rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
+  for m in re.finditer(rex, requests.get(path, headers=headers).content):
+    url = m.group(1).encode('utf-8').strip()
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
+    break
 
 
 def play_video(path):
@@ -77,6 +86,8 @@ def router(paramstring):
   if params:
     if params['action'] == 'listing':
       list_videos(int(params['daysago']))
+    elif params['action'] == 'get_play':
+      get_and_play_video(params['video'])
     elif params['action'] == 'play':
       play_video(params['video'])
   else:
