@@ -56,7 +56,7 @@ def list_videos(daysago):
     image = item.xpath('.//a[@class="thumbVideo"]//img')[0]
     time = item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip()
     title = '[{0}] {1}'.format(time, image.get('title').encode('utf-8').strip())
-    desc = item.xpath('.//div[@class="descrizione"]')[0].text.encode('utf-8').strip()
+    desc = item.xpath('.//div[@class="descrizione"]/p')[0].text.encode('utf-8').strip()
 
     listitem = xbmcgui.ListItem(label=title)
     listitem.setInfo('video', {'title': title, 'plot': desc, 'mediatype': 'video'})
