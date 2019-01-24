@@ -71,11 +71,13 @@ def get_and_play_video(path):
   rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
   for m in re.finditer(rex, requests.get(path, headers=headers).content):
     url = m.group(1).encode('utf-8').strip()
+    xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
     xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
     break
 
 
 def play_video(path):
+  xbmc.log("play {0}".format(path), xbmc.LOGNOTICE)
   xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=path))
 
 
