@@ -21,6 +21,10 @@ def list_categories():
   xbmcplugin.setPluginCategory(_handle, 'LA7')
   xbmcplugin.setContent(_handle, 'videos')
 
+  listitem = xbmcgui.ListItem(label='Refresh List')
+  listitem.setInfo('video', {'title': 'Refresh List', 'mediatype': 'video'})
+  xbmcplugin.addDirectoryItem(handle=_handle, url=_pid, listitem=listitem, isFolder=True)
+
   rex = "vS = '(.*?)'"
 
   page = requests.get('http://www.la7.it/dirette-tv', headers=headers).content
@@ -31,11 +35,11 @@ def list_categories():
     listitem.setProperty('IsPlayable', 'true')
     xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, url), listitem=listitem, isFolder=False)
 
-  for x in range(7):
-    ddd = (date.today() - timedelta(x)).strftime('%A %d %B %Y')
+  for daysago in range(7):
+    ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
     listitem = xbmcgui.ListItem(label=ddd)
     listitem.setInfo('video', {'title': ddd, 'mediatype': 'video'})
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&daysago={1}'.format(_pid, x), listitem=listitem, isFolder=True)
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&daysago={1}'.format(_pid, daysago), listitem=listitem, isFolder=True)
 
   xbmcplugin.endOfDirectory(_handle)
 
@@ -44,6 +48,10 @@ def list_videos(daysago):
   ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
   xbmcplugin.setPluginCategory(_handle, ddd)
   xbmcplugin.setContent(_handle, 'videos')
+
+  listitem = xbmcgui.ListItem(label='Refresh List')
+  listitem.setInfo('video', {'title': 'Refresh List', 'mediatype': 'video'})
+  xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&daysago={1}'.format(_pid, daysago), listitem=listitem, isFolder=True)
 
   page = requests.get('http://www.la7.it/rivedila7/{0}/LA7'.format(daysago), headers=headers).content
   tree = html.fromstring(page)
