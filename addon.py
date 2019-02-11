@@ -34,7 +34,7 @@ def list_categories():
     listitem = xbmcgui.ListItem(label='Live')
     listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
     listitem.setProperty('IsPlayable', 'true')
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, url), listitem=listitem, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, urllib.quote(url)), listitem=listitem, isFolder=False)
 
   for daysago in range(7):
     ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
@@ -78,11 +78,10 @@ def list_videos(daysago):
 
 def get_and_play_video(path):
   rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
-  for m in re.finditer(rex, requests.get(path, headers=headers).content):
-    url = m.group(1).encode('utf-8').strip()
-    xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
-    break
+  m = re.search(rex, requests.get(path, headers=headers).content)
+  url = m.group(1).encode('utf-8').strip()
+  xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
+  xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
 
 
 def play_video(path):
