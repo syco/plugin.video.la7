@@ -4,6 +4,7 @@ import xbmcgui
 import xbmcplugin
 import requests
 import re
+import urllib
 from lxml import html
 from urlparse import parse_qsl
 from datetime import date, timedelta
@@ -70,7 +71,7 @@ def list_videos(daysago):
     listitem.setInfo('video', {'title': title, 'plot': desc, 'mediatype': 'video'})
     listitem.setArt({'thumb': image.get('src').encode('utf-8').strip()})
     listitem.setProperty('IsPlayable', 'true')
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}'.format(_pid, href), listitem=listitem, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}'.format(_pid, urllib.quote(href)), listitem=listitem, isFolder=False)
 
   xbmcplugin.endOfDirectory(_handle)
 
