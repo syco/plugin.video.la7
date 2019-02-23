@@ -17,7 +17,6 @@ headers = {
   'User-Agent': 'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36',
 }
 
-
 def list_categories():
   xbmcplugin.setPluginCategory(_handle, 'LA7')
   xbmcplugin.setContent(_handle, 'videos')
@@ -26,15 +25,10 @@ def list_categories():
   listitem.setInfo('video', {'title': 'Refresh List', 'mediatype': 'video'})
   xbmcplugin.addDirectoryItem(handle=_handle, url=_pid, listitem=listitem, isFolder=True)
 
-  rex = "vS = '(.*?)'"
-
-  page = requests.get('http://www.la7.it/dirette-tv', headers=headers).content
-  if re.findall(rex, page):
-    url = re.findall(rex, page)[0]
-    listitem = xbmcgui.ListItem(label='Live')
-    listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
-    listitem.setProperty('IsPlayable', 'true')
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=play&video={1}'.format(_pid, urllib.quote(url)), listitem=listitem, isFolder=False)
+  listitem = xbmcgui.ListItem(label="Live")
+  listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
+  listitem.setProperty('IsPlayable', 'true')
+  xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}&rex={2}'.format(_pid, urllib.quote('http://www.la7.it/dirette-tv'), urllib.quote("vS = '(.*?)'")), listitem=listitem, isFolder=False)
 
   for daysago in range(7):
     ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
@@ -71,22 +65,19 @@ def list_videos(daysago):
     listitem.setInfo('video', {'title': title, 'plot': desc, 'mediatype': 'video'})
     listitem.setArt({'thumb': image.get('src').encode('utf-8').strip()})
     listitem.setProperty('IsPlayable', 'true')
-    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}'.format(_pid, urllib.quote(href)), listitem=listitem, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}&rex={2}'.format(_pid, urllib.quote(href), urllib.quote('"(http.*?\.m3u8)"')), listitem=listitem, isFolder=False)
 
   xbmcplugin.endOfDirectory(_handle)
 
 
-def get_and_play_video(path):
-  rex = re.compile(r'"(http:[^"]*\.m3u8)"', re.IGNORECASE)
-  m = re.search(rex, requests.get(path, headers=headers).content)
-  url = m.group(1).encode('utf-8').strip()
-  xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
-  xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
-
-
-def play_video(path):
-  xbmc.log("play {0}".format(path), xbmc.LOGNOTICE)
-  xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=path))
+def get_and_play_video(path, rex):
+  page = requests.get(path, headers=headers).content
+  if re.findall(rex, page):
+    url = re.findall(rex, page)[0].encode('utf-8').strip()
+    xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
+  else:
+    xbmcgui.Dialog().ok(_pid, "Impossibile trovare uno stream nel programma richiesto")
 
 
 xbmc.log(" ".join(sys.argv), xbmc.LOGNOTICE)
@@ -97,9 +88,7 @@ def router(paramstring):
     if params['action'] == 'listing':
       list_videos(int(params['daysago']))
     elif params['action'] == 'get_play':
-      get_and_play_video(params['video'])
-    elif params['action'] == 'play':
-      play_video(params['video'])
+      get_and_play_video(params['video'], params['rex'])
   else:
     list_categories()
 
