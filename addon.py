@@ -28,7 +28,7 @@ def list_categories():
   listitem = xbmcgui.ListItem(label="Live")
   listitem.setInfo('video', {'title': 'Live', 'mediatype': 'video'})
   listitem.setProperty('IsPlayable', 'true')
-  xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}&rex={2}'.format(_pid, urllib.quote('http://www.la7.it/dirette-tv'), urllib.quote("vS = '(.*?)'")), listitem=listitem, isFolder=False)
+  xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=get_play&video={1}&rex={2}'.format(_pid, urllib.quote('https://www.la7.it/dirette-tv'), urllib.quote("vS = '(.*?)'")), listitem=listitem, isFolder=False)
 
   for daysago in range(7):
     ddd = (date.today() - timedelta(daysago)).strftime('%A %d %B %Y')
@@ -48,13 +48,13 @@ def list_videos(daysago):
   listitem.setInfo('video', {'title': 'Refresh List', 'mediatype': 'video'})
   xbmcplugin.addDirectoryItem(handle=_handle, url='{0}?action=listing&daysago={1}'.format(_pid, daysago), listitem=listitem, isFolder=True)
 
-  page = requests.get('http://www.la7.it/rivedila7/{0}/LA7'.format(daysago), headers=headers).content
+  page = requests.get('https://www.la7.it/rivedila7/{0}/LA7'.format(daysago), headers=headers).content
   tree = html.fromstring(page)
 
   for item in tree.xpath('//div[@class="palinsesto_row             disponibile clearfix"]'):
     href = item.xpath('.//div[@class="titolo clearfix"]/a')[0].get('href');
     if not href.startswith('http'):
-      href = 'http://www.la7.it{0}'.format(href)
+      href = 'https://www.la7.it{0}'.format(href)
 
     image = item.xpath('.//a[@class="thumbVideo"]//img')[0]
     time = item.xpath('.//div[@class="orario"]')[0].text.encode('utf-8').strip()
@@ -74,6 +74,9 @@ def get_and_play_video(path, rex):
   page = requests.get(path, headers=headers).content
   if re.findall(rex, page):
     url = re.findall(rex, page)[0].encode('utf-8').strip()
+    if url.startswith('//'):
+      url = 'https:{0}'.format(url)
+
     xbmc.log("play {0}".format(url), xbmc.LOGNOTICE)
     xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
   else:
